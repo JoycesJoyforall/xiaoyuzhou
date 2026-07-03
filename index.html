@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F2E7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>点亮小宇宙 · Light Up Your Little Universe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F2E7;
+    --paper-deep:#F0E9D8;
+    --ink:#3B322D;
+    --ink-soft:#8A7E72;
+    --seal:#A63C36;
+    --line:#DED4C0;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    background-image:radial-gradient(circle, rgba(124,78,163,.07) 1px, transparent 1.6px);
+    background-size:28px 28px;
+    color:var(--ink);
+    font-family:'Noto Serif SC','Songti SC',serif;
+    min-height:100vh;
+  }
+  .wrap{ max-width:470px; margin:0 auto; padding:18px 16px 120px; }
+
+  /* ---------- header ---------- */
+  header{ text-align:center; margin-bottom:6px; position:relative; }
+  .title{
+    font-family:'ZCOOL XiaoWei','Kaiti SC','STKaiti',serif;
+    font-size:34px; letter-spacing:6px; margin:2px 0 0;
+    color:var(--ink);
+  }
+  .subtitle{
+    font-size:12px; color:var(--ink-soft); letter-spacing:1px; margin-top:4px;
+  }
+  .today{
+    display:inline-block; margin-top:8px; font-size:13px; color:var(--seal);
+    border:1px solid rgba(166,60,54,.35); border-radius:999px; padding:2px 12px;
+    background:rgba(166,60,54,.05);
+  }
+
+  /* ---------- child chips ---------- */
+  .chips{ display:flex; justify-content:center; gap:10px; margin:14px 0 4px; }
+  .chip{
+    display:flex; align-items:center; gap:6px;
+    font-family:inherit; font-size:16px; color:var(--ink);
+    background:#fff; border:2px solid var(--line); border-radius:999px;
+    padding:8px 14px; cursor:pointer; transition:border-color .2s, transform .15s;
+  }
+  .chip:active{ transform:scale(.96); }
+  .chip.active{ border-color:var(--seal); box-shadow:0 2px 8px rgba(166,60,54,.15); }
+  .chip .chip-emoji{ font-size:20px; }
+  .chip .edit{
+    font-size:12px; color:var(--ink-soft); display:none; margin-left:2px;
+  }
+  .chip.active .edit{ display:inline; }
+  .chip input{
+    font-family:inherit; font-size:16px; width:5.5em; border:none;
+    border-bottom:1px dashed var(--seal); background:transparent; outline:none; color:var(--ink);
+  }
+
+  /* ---------- progress ---------- */
+  .progress{ text-align:center; margin:8px 0 2px; font-size:14px; color:var(--ink-soft); }
+  .progress b{ color:var(--seal); font-size:16px; }
+  .dots{ display:flex; justify-content:center; gap:7px; margin-top:6px; }
+  .dot{ width:10px; height:10px; border-radius:50%; border:1.5px solid; opacity:.9; transition:background .3s; }
+
+  /* ---------- mandala ---------- */
+  .mandala{ display:block; width:100%; height:auto; margin-top:6px; user-select:none; }
+  .ring{ cursor:pointer; }
+  .ring ellipse{ transition:fill-opacity .5s ease, stroke-opacity .5s ease; }
+  .ring .tex{ transition:opacity .6s ease; }
+  .ring-icon{ pointer-events:none; }
+  @keyframes bloom{
+    0%{ transform:scale(1); } 40%{ transform:scale(1.045); } 100%{ transform:scale(1); }
+  }
+  .ring.bloom{
+    animation:bloom .7s ease;
+    transform-box:fill-box; transform-origin:50% 96%;
+  }
+  .hint{ text-align:center; font-size:13px; color:var(--ink-soft); margin-top:2px; }
+
+  /* ---------- task sheet ---------- */
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    max-width:470px; margin:0 auto;
+    background:#fff; border-radius:22px 22px 0 0;
+    box-shadow:0 -8px 30px rgba(59,50,45,.18);
+    transform:translateY(105%); transition:transform .3s ease;
+    padding:0 16px 26px;
+  }
+  .sheet.open{ transform:translateY(0); }
+  .sheet-head{
+    display:flex; align-items:center; gap:10px;
+    padding:16px 4px 10px; border-bottom:1px dashed var(--line);
+  }
+  .sheet-head .big{ font-size:30px; }
+  .sheet-head .name{
+    font-family:'ZCOOL XiaoWei','Kaiti SC',serif; font-size:24px; letter-spacing:3px;
+  }
+  .sheet-head .en{ font-size:12px; color:var(--ink-soft); letter-spacing:1px; margin-top:3px; }
+  .sheet-head .close{
+    margin-left:auto; border:none; background:var(--paper-deep); color:var(--ink-soft);
+    width:34px; height:34px; border-radius:50%; font-size:16px; cursor:pointer;
+  }
+  .sheet-hint{ font-size:13px; color:var(--ink-soft); margin:10px 2px 12px; }
+  .task{
+    display:flex; align-items:center; gap:12px; width:100%;
+    font-family:inherit; text-align:left;
+    background:var(--paper); border:2px solid var(--line); border-radius:16px;
+    padding:13px 14px; margin-bottom:10px; cursor:pointer;
+    font-size:18px; color:var(--ink);
+    transition:border-color .2s, background .2s, transform .12s;
+  }
+  .task:active{ transform:scale(.98); }
+  .task .t-emoji{ font-size:26px; }
+  .task .t-en{ display:block; font-size:11px; color:var(--ink-soft); letter-spacing:.5px; margin-top:2px; }
+  .task .tick{
+    margin-left:auto; width:30px; height:30px; border-radius:50%;
+    border:2px solid var(--line); display:flex; align-items:center; justify-content:center;
+    font-size:16px; color:#fff; flex:none; transition:all .2s;
+  }
+  .task.done{ background:#fff; }
+  @keyframes pop{ 0%{transform:scale(.6);} 70%{transform:scale(1.15);} 100%{transform:scale(1);} }
+  .task.done .tick{ animation:pop .3s ease; }
+
+  /* ---------- seals ---------- */
+  .seals{ margin-top:26px; }
+  .seals h3{
+    font-family:'ZCOOL XiaoWei','Kaiti SC',serif; font-weight:400;
+    font-size:18px; letter-spacing:3px; margin:0 0 10px; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .seals h3 small{ font-family:'Noto Serif SC',serif; font-size:11px; color:var(--ink-soft); letter-spacing:1px; }
+  .seal-row{ display:flex; gap:12px; overflow-x:auto; padding:4px 2px 8px; }
+  .seal-chip{ text-align:center; flex:none; }
+  .seal-mark{
+    width:44px; height:44px; border-radius:50%;
+    border:2.5px solid var(--seal); color:var(--seal);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'ZCOOL XiaoWei','Kaiti SC',serif; font-size:22px;
+    background:rgba(166,60,54,.06); transform:rotate(-6deg);
+    box-shadow:inset 0 0 0 1.5px rgba(166,60,54,.25);
+  }
+  .seal-date{ font-size:11px; color:var(--ink-soft); margin-top:4px; }
+  .seal-empty{ font-size:13px; color:var(--ink-soft); }
+
+  /* ---------- verse / footer ---------- */
+  .verse{
+    margin-top:26px; text-align:center; font-size:13.5px; line-height:2;
+    color:var(--ink-soft); letter-spacing:1px;
+  }
+  footer{
+    margin-top:22px; text-align:center; font-size:11px; color:var(--ink-soft);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .ji{
+    width:22px; height:22px; border:1.5px solid var(--seal); color:var(--seal);
+    border-radius:4px; display:inline-flex; align-items:center; justify-content:center;
+    font-family:'ZCOOL XiaoWei',serif; font-size:13px; transform:rotate(-4deg);
+  }
+
+  /* ---------- celebration ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
+    background:rgba(247,242,231,.94); opacity:0; pointer-events:none; transition:opacity .35s;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .celebrate-card{ text-align:center; padding:20px; position:relative; }
+  .big-seal{
+    width:130px; height:130px; margin:0 auto; border-radius:50%;
+    border:5px solid var(--seal); color:var(--seal);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'ZCOOL XiaoWei','Kaiti SC',serif; font-size:64px;
+    background:rgba(166,60,54,.07);
+    box-shadow:inset 0 0 0 3px rgba(166,60,54,.3), 0 6px 20px rgba(166,60,54,.2);
+    transform:rotate(-8deg);
+  }
+  .overlay.show .big-seal{ animation:sealIn .55s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes sealIn{
+    0%{ transform:scale(2) rotate(-20deg); opacity:0; }
+    65%{ transform:scale(.92) rotate(-6deg); opacity:1; }
+    100%{ transform:scale(1) rotate(-8deg); }
+  }
+  .celebrate-title{
+    font-family:'ZCOOL XiaoWei','Kaiti SC',serif; font-size:26px; letter-spacing:3px;
+    margin:18px 0 4px; color:var(--ink);
+  }
+  .celebrate-sub{ font-size:14px; color:var(--ink-soft); margin-bottom:20px; }
+  .collect-btn{
+    font-family:inherit; font-size:18px; letter-spacing:2px;
+    background:var(--seal); color:#fff; border:none; border-radius:999px;
+    padding:13px 34px; cursor:pointer; box-shadow:0 4px 14px rgba(166,60,54,.3);
+  }
+  .collect-btn:active{ transform:scale(.97); }
+  .star{
+    position:absolute; font-size:16px; opacity:0; pointer-events:none;
+    animation:twinkle 1.8s ease infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{ opacity:0; transform:scale(.5) translateY(0); }
+    50%{ opacity:1; transform:scale(1.15) translateY(-8px); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="title">点亮小宇宙</h1>
+    <div class="subtitle">Light up your little universe · 每天做一点，点亮一整圈</div>
+    <div class="today" id="todayLabel"></div>
+  </header>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="progress" id="progress"></div>
+  <div class="dots" id="dots"></div>
+
+  <svg class="mandala" id="mandala" viewBox="0 0 400 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="七环小宇宙"></svg>
+  <div class="hint" id="hint">点一点每个环，看看今天的小任务 👆</div>
+
+  <section class="seals">
+    <h3><span class="ji">記</span> 我的印章盒 <small>My seal box</small></h3>
+    <div class="seal-row" id="sealRow"></div>
+  </section>
+
+  <div class="verse">
+    从身体到头脑，从家到爱；<br>
+    从小手做的事，到帮一把、到全世界 ——<br>
+    一圈一圈，就是你的小宇宙。
+  </div>
+
+  <footer><span class="ji">記</span> JOYZ · 和爸爸妈妈一起，每天点亮七个环</footer>
+</div>
+
+<!-- task sheet -->
+<div class="sheet" id="sheet">
+  <div class="sheet-head" id="sheetHead"></div>
+  <p class="sheet-hint">做到其中一件，这一环就会亮起来 ✨ Do one and the ring lights up.</p>
+  <div id="taskList"></div>
+</div>
+
+<!-- celebration -->
+<div class="overlay" id="overlay">
+  <div class="celebrate-card" id="celebrateCard">
+    <div class="big-seal">亮</div>
+    <div class="celebrate-title" id="celebrateTitle"></div>
+    <div class="celebrate-sub" id="celebrateSub"></div>
+    <button class="collect-btn" id="collectBtn">盖章收藏 ✓</button>
+  </div>
+</div>
+
+<script>
+/* ================= data ================= */
+const REALMS = [
+  {id:'body', zh:'身体', en:'Body', ch:'身', emoji:'🤸', color:'#C9414B', tasks:[
+    {e:'🪥', zh:'刷牙洗脸', en:'Brush teeth, wash face'},
+    {e:'🥣', zh:'吃好早餐', en:'Eat a good breakfast'},
+    {e:'🏃', zh:'跳一跳，动一动', en:'Move and jump about'}]},
+  {id:'mind', zh:'头脑', en:'Mind', ch:'脑', emoji:'💭', color:'#E0662E', tasks:[
+    {e:'📖', zh:'读一本小书', en:'Read a little book'},
+    {e:'🧩', zh:'玩一个动脑游戏', en:'Do a puzzle'},
+    {e:'🤫', zh:'安静五分钟', en:'Five quiet minutes'}]},
+  {id:'home', zh:'家', en:'Home', ch:'家', emoji:'🏠', color:'#E9A63B', tasks:[
+    {e:'🧸', zh:'收好玩具', en:'Tidy the toys'},
+    {e:'🛏️', zh:'铺好小床', en:'Make the bed'},
+    {e:'👟', zh:'摆好鞋子', en:'Line up the shoes'}]},
+  {id:'love', zh:'爱', en:'Love', ch:'爱', emoji:'💗', color:'#55A05A', tasks:[
+    {e:'🤗', zh:'抱抱家人', en:'Give a big hug'},
+    {e:'💬', zh:'说一句好听的话', en:'Say something kind'},
+    {e:'🎁', zh:'和姐妹一起分享', en:'Share with your sister'}]},
+  {id:'work', zh:'小工作', en:'Work', ch:'工', emoji:'✋', color:'#2F9694', tasks:[
+    {e:'✏️', zh:'写写字，画画画', en:'Write or draw'},
+    {e:'👕', zh:'自己穿衣服', en:'Dress myself'},
+    {e:'🎯', zh:'做完一件小事', en:'Finish one little job'}]},
+  {id:'help', zh:'帮忙', en:'Help', ch:'助', emoji:'🌳', color:'#3E6EB0', tasks:[
+    {e:'🍽️', zh:'帮忙摆碗筷', en:'Set the table'},
+    {e:'🪴', zh:'给植物浇浇水', en:'Water the plants'},
+    {e:'🛍️', zh:'帮妈妈拿东西', en:'Carry something for Mum'}]},
+  {id:'world', zh:'世界', en:'World', ch:'界', emoji:'🌍', color:'#7C4EA3', tasks:[
+    {e:'🍃', zh:'看看大自然', en:'Notice nature'},
+    {e:'♻️', zh:'垃圾放对地方', en:'Rubbish in the right place'},
+    {e:'👋', zh:'微笑问声好', en:'Smile and say hello'}]}
+];
+
+/* ================= storage (safe: memory first, browser storage when available) ================= */
+const KEY = 'xiaoyuzhou.v1';
+const mem = {};
+const store = {
+  get(k){ try{ const v = localStorage.getItem(k); return v !== null ? v : (mem[k] ?? null); }catch(e){ return mem[k] ?? null; } },
+  set(k,v){ mem[k] = v; try{ localStorage.setItem(k, v); }catch(e){} }
+};
+function load(){ try{ return JSON.parse(store.get(KEY)); }catch(e){ return null; } }
+function save(){ store.set(KEY, JSON.stringify(S)); }
+
+let S = load() || {
+  children:[{id:'a', emoji:'🐷', name:'早点'},{id:'b', emoji:'🐯', name:'Tiger'}],
+  active:'a',
+  days:{}
+};
+
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function dayRec(){
+  const k = S.active + '|' + todayKey();
+  if(!S.days[k]) S.days[k] = {done:{}, sealed:false};
+  return S.days[k];
+}
+function litRealms(){
+  const rec = dayRec();
+  return REALMS.filter(r => r.tasks.some((t,i) => rec.done[r.id + '-' + i]));
+}
+
+/* ================= mandala geometry ================= */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const CX = 200, BOTTOM = 432;
+const RY = [40, 68, 96, 124, 152, 180, 207];
+const ringEls = {};
+const svg = document.getElementById('mandala');
+
+(function buildMandala(){
+  for(let i = REALMS.length - 1; i >= 0; i--){
+    const r = REALMS[i];
+    const ry = RY[i], rx = Math.min(ry * 0.94, 190), cy = BOTTOM - ry;
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class','ring');
+    g.dataset.id = r.id;
+
+    const base = document.createElementNS(SVGNS,'ellipse');
+    setAttrs(base, {cx:CX, cy, rx, ry, fill:'#F7F2E7'});
+    const col = document.createElementNS(SVGNS,'ellipse');
+    setAttrs(col, {cx:CX, cy, rx, ry, fill:r.color, 'fill-opacity':'0.18',
+      stroke:r.color, 'stroke-opacity':'0.45', 'stroke-width':'1.5', 'stroke-dasharray':'3 6'});
+
+    const tex = document.createElementNS(SVGNS,'g');
+    tex.setAttribute('class','tex');
+    tex.setAttribute('opacity','0');
+    [0.86, 0.7].forEach(f=>{
+      const t = document.createElementNS(SVGNS,'ellipse');
+      setAttrs(t, {cx:CX, cy:BOTTOM - ry*f - (1-f)*6, rx:rx*f, ry:ry*f,
+        fill:'none', stroke:'rgba(255,255,255,.4)', 'stroke-width':'2', 'stroke-dasharray':'7 11'});
+      tex.appendChild(t);
+    });
+
+    /* icon */
+    const iconG = document.createElementNS(SVGNS,'g');
+    iconG.setAttribute('class','ring-icon');
+    let iy;
+    if(i === 0){ iy = cy - 4; }
+    else {
+      const top = BOTTOM - 2*ry, prevTop = BOTTOM - 2*RY[i-1];
+      iy = (top + prevTop) / 2;
+    }
+    const em = textEl(CX, iy + 2, r.emoji, 24, 'central'); 
+    const ch = textEl(CX, iy + 24, r.ch, 11, 'central');
+    ch.setAttribute('fill', '#3B322D'); ch.setAttribute('opacity','0.65');
+    ch.setAttribute('font-family', "'ZCOOL XiaoWei','Kaiti SC',serif");
+    iconG.appendChild(em); iconG.appendChild(ch);
+
+    g.appendChild(base); g.appendChild(col); g.appendChild(tex); g.appendChild(iconG);
+    g.addEventListener('click', ()=> openSheet(r.id));
+    svg.appendChild(g);
+    ringEls[r.id] = {g, col, tex};
+  }
+})();
+
+function setAttrs(el, obj){ for(const k in obj) el.setAttribute(k, obj[k]); }
+function textEl(x, y, str, size, baseline){
+  const t = document.createElementNS(SVGNS,'text');
+  setAttrs(t, {x, y, 'text-anchor':'middle', 'font-size':size, 'dominant-baseline':baseline});
+  t.textContent = str;
+  return t;
+}
+
+/* ================= rendering ================= */
+let prevLit = new Set();
+let openRealm = null;
+
+function renderChips(){
+  const box = document.getElementById('chips');
+  box.innerHTML = '';
+  S.children.forEach(c=>{
+    const b = document.createElement('button');
+    b.className = 'chip' + (c.id === S.active ? ' active' : '');
+    b.innerHTML = `<span class="chip-emoji">${c.emoji}</span><span class="chip-name">${escapeHtml(c.name)}</span><span class="edit">✎</span>`;
+    b.addEventListener('click', ()=>{
+      if(S.active !== c.id){ S.active = c.id; save(); prevLit = new Set(); closeSheet(); renderAll(); }
+    });
+    b.querySelector('.edit').addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      startRename(b, c);
+    });
+    box.appendChild(b);
+  });
+}
+function startRename(chip, child){
+  const nameSpan = chip.querySelector('.chip-name');
+  const input = document.createElement('input');
+  input.value = child.name;
+  input.maxLength = 10;
+  nameSpan.replaceWith(input);
+  input.focus(); input.select();
+  const finish = ()=>{
+    const v = input.value.trim();
+    if(v) child.name = v;
+    save(); renderAll();
+  };
+  input.addEventListener('blur', finish);
+  input.addEventListener('keydown', e=>{ if(e.key === 'Enter') input.blur(); });
+}
+
+function renderRings(){
+  const lit = new Set(litRealms().map(r=>r.id));
+  REALMS.forEach(r=>{
+    const el = ringEls[r.id], isLit = lit.has(r.id);
+    el.col.setAttribute('fill-opacity', isLit ? '0.92' : '0.18');
+    el.col.setAttribute('stroke-opacity', isLit ? '0.9' : '0.45');
+    el.col.setAttribute('stroke-dasharray', isLit ? 'none' : '3 6');
+    el.col.setAttribute('stroke-width', isLit ? '2' : '1.5');
+    el.tex.setAttribute('opacity', isLit ? '1' : '0');
+    el.g.style.filter = isLit ? `drop-shadow(0 0 7px ${r.color}55)` : 'none';
+    if(isLit && !prevLit.has(r.id)){
+      el.g.classList.remove('bloom'); void el.g.getBBox; el.g.classList.add('bloom');
+      setTimeout(()=> el.g.classList.remove('bloom'), 750);
+    }
+  });
+  prevLit = lit;
+}
+
+function renderProgress(){
+  const n = litRealms().length;
+  const rec = dayRec();
+  const child = S.children.find(c=>c.id === S.active);
+  const p = document.getElementById('progress');
+  if(n === 7){
+    p.innerHTML = rec.sealed
+      ? `${child.emoji} ${escapeHtml(child.name)} 的小宇宙今天全亮了，已盖章 ✓`
+      : `${child.emoji} ${escapeHtml(child.name)} 的小宇宙 <b>全亮了！✨</b>`;
+  } else {
+    p.innerHTML = `${child.emoji} ${escapeHtml(child.name)} 今天点亮了 <b>${n}</b> / 7 环`;
+  }
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  const lit = new Set(litRealms().map(r=>r.id));
+  REALMS.forEach(r=>{
+    const d = document.createElement('span');
+    d.className = 'dot';
+    d.style.borderColor = r.color;
+    d.style.background = lit.has(r.id) ? r.color : 'transparent';
+    dots.appendChild(d);
+  });
+}
+
+function renderSeals(){
+  const row = document.getElementById('sealRow');
+  row.innerHTML = '';
+  const prefix = S.active + '|';
+  const dates = Object.keys(S.days)
+    .filter(k => k.startsWith(prefix) && S.days[k].sealed)
+    .map(k => k.slice(prefix.length)).sort();
+  if(dates.length === 0){
+    row.innerHTML = '<span class="seal-empty">还没有印章 —— 点亮七个环，就能盖第一个章啦。</span>';
+    return;
+  }
+  dates.forEach(d=>{
+    const [,m,day] = d.split('-');
+    const chip = document.createElement('div');
+    chip.className = 'seal-chip';
+    chip.innerHTML = `<div class="seal-mark">亮</div><div class="seal-date">${+m}·${+day}</div>`;
+    row.appendChild(chip);
+  });
+}
+
+function renderToday(){
+  const d = new Date();
+  const wd = ['日','一','二','三','四','五','六'][d.getDay()];
+  document.getElementById('todayLabel').textContent =
+    `${d.getMonth()+1}月${d.getDate()}日 · 星期${wd}`;
+}
+
+/* ================= task sheet ================= */
+function openSheet(id){
+  openRealm = id;
+  const r = REALMS.find(x=>x.id === id);
+  const head = document.getElementById('sheetHead');
+  head.innerHTML = `
+    <span class="big">${r.emoji}</span>
+    <div><div class="name" style="color:${r.color}">${r.zh}</div><div class="en">${r.en}</div></div>
+    <button class="close" aria-label="关闭">✕</button>`;
+  head.querySelector('.close').addEventListener('click', closeSheet);
+  renderTasks();
+  document.getElementById('sheet').classList.add('open');
+}
+function closeSheet(){
+  openRealm = null;
+  document.getElementById('sheet').classList.remove('open');
+}
+function renderTasks(){
+  if(!openRealm) return;
+  const r = REALMS.find(x=>x.id === openRealm);
+  const rec = dayRec();
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  r.tasks.forEach((t, i)=>{
+    const tid = r.id + '-' + i;
+    const done = !!rec.done[tid];
+    const b = document.createElement('button');
+    b.className = 'task' + (done ? ' done' : '');
+    if(done) b.style.borderColor = r.color;
+    b.innerHTML = `
+      <span class="t-emoji">${t.e}</span>
+      <span>${t.zh}<span class="t-en">${t.en}</span></span>
+      <span class="tick" style="${done ? `background:${r.color};border-color:${r.color}` : ''}">${done ? '✓' : ''}</span>`;
+    b.addEventListener('click', ()=>{
+      rec.done[tid] = !rec.done[tid];
+      save();
+      renderAll();
+      maybeCelebrate();
+    });
+    list.appendChild(b);
+  });
+}
+
+/* ================= celebration ================= */
+function maybeCelebrate(){
+  const rec = dayRec();
+  if(litRealms().length === 7 && !rec.sealed){
+    setTimeout(showCelebrate, 650);
+  }
+}
+function showCelebrate(){
+  const rec = dayRec();
+  if(rec.sealed) return;
+  closeSheet();
+  const child = S.children.find(c=>c.id === S.active);
+  document.getElementById('celebrateTitle').textContent = `${child.name} 的小宇宙点亮了！`;
+  const d = new Date();
+  document.getElementById('celebrateSub').textContent =
+    `${d.getMonth()+1}月${d.getDate()}日 · 七环全亮 · Below as above ✨`;
+  const card = document.getElementById('celebrateCard');
+  card.querySelectorAll('.star').forEach(s=>s.remove());
+  for(let i = 0; i < 22; i++){
+    const s = document.createElement('span');
+    s.className = 'star';
+    s.textContent = ['✦','✧','⭐','✨'][i % 4];
+    s.style.left = (Math.random()*100) + '%';
+    s.style.top = (Math.random()*100) + '%';
+    s.style.animationDelay = (Math.random()*1.6) + 's';
+    s.style.color = REALMS[i % 7].color;
+    card.appendChild(s);
+  }
+  document.getElementById('overlay').classList.add('show');
+}
+document.getElementById('collectBtn').addEventListener('click', ()=>{
+  dayRec().sealed = true;
+  save();
+  document.getElementById('overlay').classList.remove('show');
+  renderAll();
+});
+
+/* ================= utils & boot ================= */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderAll(){
+  renderChips(); renderRings(); renderProgress(); renderSeals(); renderTasks();
+}
+renderToday();
+renderAll();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(reg => console.log('SW registered:', reg.scope))
+    .catch(err => console.error('SW registration failed:', err));
+}
+</script>
+</body>
+</html>
