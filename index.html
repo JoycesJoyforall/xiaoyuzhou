@@ -243,6 +243,16 @@
   </div>
 
   <footer><span class="ji">記</span> JOYZ · 和爸爸妈妈一起，每天点亮七个环</footer>
+
+<!-- 同步区：预留与咸粥后端手动同步入口（方案2） -->
+<div style="margin-top:22px;text-align:center;padding:16px 12px;border:1.5px dashed var(--line);border-radius:16px;background:rgba(166,60,54,.04);">
+  <div style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;letter-spacing:1px;">与 咸粥楸芊·云平时 同步</div>
+  <button id="syncExport" class="collect-btn" style="padding:8px 18px;font-size:14px;letter-spacing:1px;margin:4px;">导出数据 📤</button>
+  <button id="syncImport" class="collect-btn" style="padding:8px 18px;font-size:14px;letter-spacing:1px;margin:4px;background:var(--ink-soft);">导入数据 📥</button>
+  <input type="file" id="syncFile" accept="application/json" style="display:none;">
+  <div id="syncMsg" style="font-size:12px;color:var(--seal);margin-top:8px;min-height:16px;"></div>
+</div>
+
 </div>
 
 <!-- task sheet -->
@@ -577,6 +587,64 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<
 function renderAll(){
   renderChips(); renderRings(); renderProgress(); renderSeals(); renderTasks();
 }
+
+/* ================= sync with xianzhou (manual, plan 2) ================= */
+function showSyncMsg(msg){
+  const el = document.getElementById('syncMsg');
+  if(!el) return;
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 2600);
+}
+function exportXiaoyuzhou(){
+  const data = {
+    app: 'xiaoyuzhou',
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    children: S.children,
+    days: S.days
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'xiaoyuzhou-' + todayKey() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showSyncMsg('已导出，可导入咸粥或其他设备');
+}
+function importXiaoyuzhou(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data || data.app !== 'xiaoyuzhou'){
+        showSyncMsg('不是小宇宙数据文件');
+        return;
+      }
+      if(data.children) S.children = data.children;
+      if(data.days) S.days = data.days;
+      save();
+      renderAll();
+      showSyncMsg('导入成功 ✓');
+    }catch(err){
+      showSyncMsg('文件解析失败：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+function initXianzhouSync(){
+  const btnExport = document.getElementById('syncExport');
+  const btnImport = document.getElementById('syncImport');
+  const fileInput = document.getElementById('syncFile');
+  if(btnExport) btnExport.addEventListener('click', exportXiaoyuzhou);
+  if(btnImport) btnImport.addEventListener('click', () => fileInput && fileInput.click());
+  if(fileInput) fileInput.addEventListener('change', e => {
+    if(e.target.files && e.target.files[0]) importXiaoyuzhou(e.target.files[0]);
+    e.target.value = '';
+  });
+}
+initXianzhouSync();
+
 renderToday();
 renderAll();
 </script>
